@@ -1,0 +1,22 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ภาพรวมฟอร์มจ้างเหมา</title><link rel="stylesheet" href="styles.css"></head><body>
+<header class="brand"><img src="assets/physical-environment-logo.png" alt="กองกายภาพและสิ่งแวดล้อม มหาวิทยาลัยมหิดล"><span>CONTRACTOR OVERVIEW</span></header>
+<main>
+<section class="head"><div><p class="eyebrow">กองกายภาพและสิ่งแวดล้อม</p><h1>ภาพรวมฟอร์มจ้างเหมา</h1><p>ดูยอดตามสถานะ และเปรียบเทียบกลุ่มงานในช่วงเดียวกัน</p></div><button type="button" id="connect" hidden>เชื่อมบัญชีมหิดล</button></section>
+<p id="notice" role="status">ยังไม่แสดงข้อมูลจนกว่าจะยืนยันสิทธิ์บัญชี</p>
+<section class="filters" aria-label="ตัวกรองช่วงเวลา"><label>ตั้งแต่วันที่บันทึก<input type="date" id="from" disabled></label><label>ถึงวันที่บันทึก<input type="date" id="to" disabled></label><button type="button" id="apply" disabled>แสดงผล</button><button type="button" class="secondary" id="reset" disabled>ล้างตัวกรองทั้งหมด</button></section>
+<section aria-labelledby="filterTitle"><div class="section-head"><h2 id="filterTitle">สถานะการดำเนินงาน</h2><p>กดการ์ดเพื่อกรองกราฟและส่วนเปรียบเทียบ</p></div>
+<div class="metrics" id="statusCards">
+<button type="button" class="card" id="statusAll" data-status="all" aria-pressed="true" disabled><span>รายการทั้งหมด</span><strong id="allCount">—</strong></button>
+<button type="button" class="card" id="statusDone" data-status="done" aria-pressed="false" disabled><span>แล้วเสร็จ</span><strong id="doneCount">—</strong></button>
+<button type="button" class="card" id="statusOngoing" data-status="ongoing" aria-pressed="false" disabled><span>ยังไม่แล้วเสร็จ / กำลังดำเนินการ</span><strong id="ongoingCount">—</strong></button>
+<button type="button" class="card" id="statusOther" data-status="other" aria-pressed="false" disabled><span>อื่น ๆ / ไม่ระบุ</span><strong id="otherCount">—</strong></button>
+</div></section>
+<section class="panel" aria-labelledby="compareTitle"><div class="section-head"><h2 id="compareTitle">เปรียบเทียบกลุ่มงาน</h2><p id="compareHint">เลือก 2 กลุ่มงานเพื่อเทียบในช่วงเดียวกัน</p></div>
+<div class="compare-selects"><label>กลุ่มงานที่ 1<select id="first" disabled><option value="">เลือกกลุ่มงาน</option></select></label><label>กลุ่มงานที่ 2<select id="second" disabled><option value="">เลือกกลุ่มงาน</option></select></label><button type="button" class="secondary" id="clearCompare" disabled>ล้างคู่เปรียบเทียบ</button></div>
+<div id="comparison" class="compare-result"><p class="empty">จะแสดงเมื่อยืนยันสิทธิ์และเลือกครบ 2 กลุ่ม</p></div></section>
+<div class="chart-grid single">
+<section class="panel"><h2>รายการตามกลุ่มงาน</h2><p id="groupScope">ตามสถานะที่เลือก</p><div id="groupChart"><p class="empty">จะแสดงเมื่ออ่านข้อมูลที่ได้รับอนุญาต</p></div></section>
+</div>
+<p id="source" class="source">ที่มา: แท็บ OPPE ของฟอร์มจ้างเหมา • ยังไม่มีข้อมูลที่ยืนยันให้แสดง</p>
+</main><script src="config.js"></script><script src="connection.js"></script><script src="app.js"></script></body></html>
