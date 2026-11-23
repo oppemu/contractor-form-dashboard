@@ -1,22 +1,40 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ภาพรวมฟอร์มจ้างเหมา</title><link rel="stylesheet" href="styles.css?v=blue-1"></head><body>
-<header class="brand"><img src="physical-environment-logo.png" alt="กองกายภาพและสิ่งแวดล้อม มหาวิทยาลัยมหิดล"><span>CONTRACTOR OVERVIEW</span></header>
-<main>
-<section class="head"><div><p class="eyebrow">กองกายภาพและสิ่งแวดล้อม</p><h1>ภาพรวมฟอร์มจ้างเหมา</h1><p>ดูยอดตามสถานะ และเปรียบเทียบกลุ่มงานในช่วงเดียวกัน</p></div><button type="button" id="connect" hidden>เชื่อมบัญชีมหิดล</button></section>
-<p id="notice" role="status">ยังไม่แสดงข้อมูลจนกว่าจะยืนยันสิทธิ์บัญชี</p>
-<section class="filters" aria-label="ตัวกรองช่วงเวลา"><label>ตั้งแต่วันที่บันทึก<input type="date" id="from" disabled></label><label>ถึงวันที่บันทึก<input type="date" id="to" disabled></label><button type="button" id="apply" disabled>แสดงผล</button><button type="button" class="secondary" id="reset" disabled>ล้างตัวกรองทั้งหมด</button></section>
-<section aria-labelledby="filterTitle"><div class="section-head"><h2 id="filterTitle">สถานะการดำเนินงาน</h2><p>กดการ์ดเพื่อกรองกราฟและส่วนเปรียบเทียบ</p></div>
-<div class="metrics" id="statusCards">
-<button type="button" class="card" id="statusAll" data-status="all" aria-pressed="true" disabled><span>รายการทั้งหมด</span><strong id="allCount">—</strong></button>
-<button type="button" class="card" id="statusDone" data-status="done" aria-pressed="false" disabled><span>แล้วเสร็จ</span><strong id="doneCount">—</strong></button>
-<button type="button" class="card" id="statusOngoing" data-status="ongoing" aria-pressed="false" disabled><span>ยังไม่แล้วเสร็จ / กำลังดำเนินการ</span><strong id="ongoingCount">—</strong></button>
-<button type="button" class="card" id="statusOther" data-status="other" aria-pressed="false" disabled><span>อื่น ๆ / ไม่ระบุ</span><strong id="otherCount">—</strong></button>
-</div></section>
-<section class="panel" aria-labelledby="compareTitle"><div class="section-head"><h2 id="compareTitle">เปรียบเทียบกลุ่มงาน</h2><p id="compareHint">เลือก 2 กลุ่มงานเพื่อเทียบในช่วงเดียวกัน</p></div>
-<div class="compare-selects"><label>กลุ่มงานที่ 1<select id="first" disabled><option value="">เลือกกลุ่มงาน</option></select></label><label>กลุ่มงานที่ 2<select id="second" disabled><option value="">เลือกกลุ่มงาน</option></select></label><button type="button" class="secondary" id="clearCompare" disabled>ล้างคู่เปรียบเทียบ</button></div>
-<div id="comparison" class="compare-result"><p class="empty">จะแสดงเมื่อยืนยันสิทธิ์และเลือกครบ 2 กลุ่ม</p></div></section>
-<div class="chart-grid single">
-<section class="panel"><h2>รายการตามกลุ่มงาน</h2><p id="groupScope">ตามสถานะที่เลือก</p><div id="groupChart"><p class="empty">จะแสดงเมื่ออ่านข้อมูลที่ได้รับอนุญาต</p></div></section>
-</div>
-<p id="source" class="source">ที่มา: แท็บ OPPE ของฟอร์มจ้างเหมา • ยังไม่มีข้อมูลที่ยืนยันให้แสดง</p>
-</main><script src="config.js"></script><script src="connection.js"></script><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แดชบอร์ดจัดซื้อจัดจ้างและควบคุมผู้รับเหมา</title>
+<link rel="stylesheet" href="styles.css?v=procurement-1"></head><body>
+<header class="mast"><div class="frame"><h1><span aria-hidden="true">▥</span> แดชบอร์ดจัดซื้อจัดจ้างและควบคุมผู้รับเหมา</h1><span class="badge">SD OPPE-01-F-08-01</span></div></header>
+<main class="frame">
+ <p class="notice" id="notice" role="status">กำลังตรวจสิทธิ์และอ่านข้อมูล…</p>
+ <section class="kpis" aria-label="ภาพรวมจัดซื้อจัดจ้าง">
+  <article class="kpi"><h2>รายการเข้าปฏิบัติงาน / สัญญา</h2><p class="figure" id="entries">—</p><p id="entities">จำนวนสัญญาและบริษัท</p><span aria-hidden="true" class="symbol">▤</span></article>
+  <article class="kpi kpi-value"><h2>ประมาณการมูลค่าสัญญา</h2><p class="figure" id="value">—</p><p id="contractsValue">นับหนึ่งครั้งต่อสัญญา</p><span aria-hidden="true" class="symbol">฿</span></article>
+  <article class="kpi kpi-paid"><h2>ยอดเบิกสะสมสูงสุดที่บันทึก</h2><p class="figure" id="paid">—</p><p id="paidRate">เทียบกับมูลค่าสัญญารวม</p><span aria-hidden="true" class="symbol">↗</span></article>
+  <article class="kpi kpi-category"><h2>หมวดหมู่งาน</h2><p class="figure" id="categoryCount">—</p><p>ตามหมวดหมู่ในฟอร์ม</p><span aria-hidden="true" class="symbol">▦</span></article>
+ </section>
+ <p class="finance-note"><strong>ประมาณการตามเลขที่สัญญา</strong> · ไม่ใช่ยอดยืนยันทางบัญชี: บางเลขที่ซ้ำต่างปีงบประมาณ บางรายการไม่มีเลขที่ และบางรายงานระบุมูลค่าไม่ตรงกัน ยอดเบิกเป็นยอดสะสมสูงสุดที่บันทึกต่อกลุ่มสัญญา ไม่ใช่ยอดรายเดือน</p>
+ <section class="panel she" aria-labelledby="sheTitle"><h2 id="sheTitle">สุขภาพ อาชีวอนามัย และความปลอดภัย (SHE &amp; Health)</h2><p id="sheInfo" class="subtle" hidden></p>
+  <div class="she-grid">
+   <article class="she-card"><h3>อบรม COSHEM</h3><p class="figure" id="training">—</p><p id="trainingMeta">ผ่านการอบรม</p></article>
+   <article class="she-card"><h3>ความพร้อมสุขภาพ</h3><p class="figure" id="health">—</p><p id="healthMeta">ยอดเข้าปฏิบัติงานจริง</p></article>
+   <article class="she-card"><h3>ประวัติและสารเสพติด</h3><p class="figure" id="screen">—</p><p id="screenMeta">ผ่านอย่างน้อยหนึ่งการคัดกรอง</p></article>
+   <article class="she-card"><h3>Work Permit &amp; SDS</h3><p class="figure" id="permit">—</p><p id="permitMeta">มีการระบุประเภทใบอนุญาต</p></article>
+  </div>
+ </section>
+ <section class="charts" aria-label="กราฟภาพรวมสามมุมมอง">
+  <article class="panel chart"><div class="chart-head"><h2>สถานที่ดำเนินการ</h2><label>แสดงตาม<select id="siteDisplay" disabled><option value="site">สถานที่</option><option value="category">หมวดหมู่งาน</option></select></label></div><div id="donut"></div></article>
+  <article class="panel chart"><div class="chart-head"><h2>การเข้าปฏิบัติงานรายเดือน</h2><label>ปีที่เข้าดำเนินการ<select class="global-picker" id="operationYear" disabled><option value="">ทั้งหมด</option></select></label></div><div id="monthly"></div><p id="undated" class="subtle"></p></article>
+  <article class="panel chart"><div class="chart-head"><h2>หมวดหมู่งาน</h2><button type="button" id="showAll" disabled>แสดงทั้งหมด</button></div><div id="categories"></div></article>
+ </section>
+ <section class="panel" aria-labelledby="filterTitle"><div class="chart-head"><h2 id="filterTitle">ตัวกรองและสรุปข้อมูลรวม</h2><span id="filterCount" class="badge badge-blue">—</span></div>
+  <form id="filters">
+   <label>หมวดหมู่งาน<select class="global-picker" id="category" disabled><option value="">ทั้งหมด</option></select></label>
+   <label>สถานที่ดำเนินการ<select class="global-picker" id="site" disabled><option value="">ทั้งหมด</option></select></label>
+   <label>ปีงบประมาณของสัญญา<select class="global-picker" id="fiscalYear" disabled><option value="">ทั้งหมด</option></select></label>
+   <label>ตั้งแต่วันที่เข้าดำเนินการ<input type="date" id="from" disabled></label>
+   <label>ถึงวันที่เข้าดำเนินการ<input type="date" id="to" disabled></label>
+   <button class="primary" type="submit" id="apply" disabled>แสดงผล</button><button type="button" id="reset" disabled>ล้างตัวกรอง</button>
+  </form>
+  <div class="breakdown"><div><h3>รายการตามหมวดหมู่งาน</h3><div id="categoryBreakdown"></div></div><div><h3>รายการตามสถานที่</h3><div id="siteBreakdown"></div></div></div>
+ </section>
+ <details class="notes"><summary>วิธีนับและแหล่งข้อมูล</summary><p>อ่านข้อมูลจากแบบฟอร์ม OPPE-01-F-08-01 แบบอ่านอย่างเดียว ไม่แสดงชื่อบริษัท เลขที่สัญญา หรือรายบุคคล</p><p>มูลค่าและยอดเบิกสะสมใช้ค่าสูงสุดที่บันทึกต่อสัญญาในข้อมูลที่เลือก สัญญาที่ไม่มีเลขที่จัดกลุ่มด้วยเรื่องงานและบริษัท เงินที่ไม่ระบุไม่ถูกนับเป็นศูนย์</p><p>กราฟรายเดือนใช้วันที่เข้าดำเนินการ ส่วนปีงบประมาณใช้ปีบนสัญญา ถ้ากรองวันที่ รายการที่ไม่มีวันจะไม่แสดง ยอดคนใช้จำนวนผู้มาปฏิบัติงานจริงเท่านั้น</p></details>
+</main><script src="config.js?v=procurement-1"></script><script src="connection.js?v=procurement-1"></script><script src="app.js?v=procurement-1"></script></body></html>

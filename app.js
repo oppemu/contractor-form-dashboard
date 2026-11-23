@@ -1,98 +1,98 @@
-(() => {
- 'use strict';
- const $=id=>document.getElementById(id);
- const statusNames={all:'รายการทั้งหมด',done:'แล้วเสร็จ',ongoing:'ยังไม่แล้วเสร็จ / กำลังดำเนินการ',other:'อื่น ๆ / ไม่ระบุ'};
- const keys=Object.keys(statusNames), cards=Array.from(document.querySelectorAll('[data-status]'));
- const controls=['from','to','apply','reset','first','second','clearCompare'];
- const groupPattern=/^(OPPE-\d{2}|unclassified)$/;
- const count=n=>typeof n==='number'&&Number.isFinite(n)?n.toLocaleString('th-TH'):'—';
- const pct=n=>typeof n==='number'&&Number.isFinite(n)?n.toLocaleString('th-TH',{style:'percent',maximumFractionDigits:1}):'—';
- const base='ที่มา: แท็บ OPPE ของฟอร์มจ้างเหมา • นับรายการตามวันที่บันทึก';
- const errors={'not-configured':'ยังไม่ได้เชื่อมข้อมูลของหน่วยงาน',auth:'บัญชีนี้ไม่มีสิทธิ์ดูข้อมูล ลองเชื่อมด้วยบัญชีมหิดลที่ได้รับอนุญาต',popup:'เบราว์เซอร์ไม่อนุญาตให้เปิดหน้าต่างลงชื่อเข้าใช้',timeout:'ยังเชื่อมข้อมูลไม่ได้ ลองกด “เชื่อมบัญชีมหิดล”',source:'ยังอ่านข้อมูลจากชีตต้นทางไม่ได้',filter:'ตรวจช่วงวันและเลือกคนละกลุ่มงาน',connection:'ยังเชื่อมข้อมูลไม่ได้ กรุณาลองใหม่'};
- let seq=0,authorized=false,status='all';
- const element=(tag,text,cls)=>{const e=document.createElement(tag);if(typeof text==='string')e.textContent=text;if(cls)e.className=cls;return e;};
- const note=(id,text)=>$(id).replaceChildren(element('p',text,'empty'));
- const selected=()=>({from:$('from').value||'',to:$('to').value||'',status,first:$('first').value||'',second:$('second').value||''});
- const disable=arg=>{for(const id of controls)$(id).disabled=arg;for(const card of cards)card.disabled=arg;};
- function mark(s){for(const card of cards)card.setAttribute('aria-pressed',String(card.dataset.status===s));}
- function clear(){
-  for(const key of keys)$(key+'Count').textContent='—';
-  for(const id of ['first','second'])$(id).replaceChildren(new Option('เลือกกลุ่มงาน',''));
-  note('groupChart','จะแสดงเมื่ออ่านข้อมูลที่ได้รับอนุญาต');
-  note('comparison','จะแสดงเมื่อยืนยันสิทธิ์และเลือกครบ 2 กลุ่ม');
-  $('source').textContent=base+' • ยังไม่มีข้อมูลที่ยืนยันให้แสดง';$('groupScope').textContent='ตามสถานะที่เลือก';mark('all');
+(()=>{'use strict';
+const $=id=>document.getElementById(id), keys=['site','category','fiscalYear','operationYear','from','to'];
+const messages={auth:'เปิดลิงก์นี้ด้วยบัญชีมหิดลที่ได้รับสิทธิ์',source:'ยังอ่านข้อมูลต้นทางไม่ได้',filter:'ตรวจสอบช่วงวันที่และตัวกรอง',standalone:'ยังไม่ได้ตั้งค่าหลังบ้าน Apps Script', timeout:'ยังยืนยันบัญชีมหิดลไม่ได้ เปิดด้วยบัญชีที่ได้รับสิทธิ์ใน Chrome แล้วโหลดหน้าใหม่ หากเบราว์เซอร์บล็อก ให้ตรวจการอนุญาตคุกกี้ของ Google สำหรับหน้านี้', connection:'เชื่อมข้อมูลไม่ได้ โปรดลองโหลดหน้าใหม่'};
+const fmt=new Intl.NumberFormat('th-TH'), amount=new Intl.NumberFormat('th-TH',{minimumFractionDigits:1,maximumFractionDigits:1});
+const color=['#2563eb','#0ca578','#e69918','#e64b51','#8154dc','#059ab4','#ef74ab','#536c9b','#559154'];
+const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const val=n=>Number.isFinite(n)?fmt.format(n):'—', money=n=>Number.isFinite(n)?amount.format(n/1000000)+' ล้านบาท':'—';
+let generation=0, state=null, showAll=false;
+function make(tag,label='',className=''){const e=document.createElement(tag);if(label)e.textContent=label;if(className)e.className=className;return e;}
+function clearVisual(){
+ for(const id of ['entries','entities','value','contractsValue','paid','paidRate','categoryCount','training','trainingMeta','health','healthMeta','screen','screenMeta','permit','permitMeta','filterCount'])$(id).textContent='—';
+ $('undated').textContent='';$('sheInfo').hidden=true;
+ for(const id of ['donut','monthly','categories','categoryBreakdown','siteBreakdown'])$(id).replaceChildren(make('p','แสดงเมื่ออ่านข้อมูลที่ได้รับอนุญาต','blank'));
+}
+function enable(on){for(const id of [...keys,'apply','reset','siteDisplay','showAll'])$(id).disabled=!on;}
+function chartBlank(root){root.replaceChildren(make('p','ไม่มีรายการตามตัวกรองนี้','blank'));}
+function addOptions(id,items){
+ const sel=$(id), old=sel.value;sel.replaceChildren(new Option('ทั้งหมด',''),...items.map(a=>new Option(a,a)));
+ sel.value=items.includes(old)?old:'';
+}
+function renderDonut(){
+ const dest=$('donut'), list=$('siteDisplay').value==='category'?state.categories:state.sites, total=state.summary.entries;
+ if(!list.length||!total)return chartBlank(dest);
+ const top=list.slice(0,8), more=list.slice(8).reduce((s,k)=>s+k.count,0);
+ if(more)top.push({label:'อื่น ๆ',count:more});
+ let current=0;const wheel=make('div','','donut');wheel.setAttribute('role','img');wheel.setAttribute('aria-label','สัดส่วนรายการตามหมวดที่เลือก');
+ wheel.style.background='conic-gradient('+top.map((r,i)=>{const start=current;current+=r.count*100/total;return color[i]+' '+start+'% '+current+'%';}).join(',')+')';
+ wheel.append(make('span',val(total)));
+ const legend=make('ul','','legend');top.forEach((r,i)=>{const dot=make('i','','dot');dot.style.background=color[i];const item=make('li');item.append(dot,make('span',r.label+' · '+val(r.count)));legend.append(item);});
+ dest.replaceChildren(wheel,legend);
+}
+function renderMonths(){
+ const dest=$('monthly');const max=Math.max(1,...state.months);const wrap=make('div','','month-grid');
+ state.months.forEach((n,i)=>{const item=make('div','','month'), box=make('div','','month-box');
+  const bar=make('span','','month-bar');bar.style.height=(n/max*106)+'px';item.title=months[i]+' '+val(n)+' รายการ';
+  box.append(make('span',val(n),'month-value'),bar);item.append(box,make('span',months[i],'month-label'));wrap.append(item);
+ });dest.replaceChildren(wrap);
+ $('undated').textContent=state.summary.undated?'ไม่ระบุวันที่เข้าดำเนินการ '+val(state.summary.undated)+' รายการ':'นับตามวันที่เข้าดำเนินการ';
+}
+function renderBars(){
+ const dest=$('categories'), rows=showAll?state.categories:state.categories.slice(0,7), max=Math.max(1,...rows.map(a=>a.count));
+ if(!rows.length)return chartBlank(dest);
+ const wrap=make('div','','bar-list');rows.forEach((r,i)=>{
+  const item=make('button','','bar-item');item.type='button';item.setAttribute('aria-label',r.label+' '+val(r.count)+' รายการ, เลือกหมวดนี้');
+  const rail=make('span','','touch-bar'), mark=make('i');rail.setAttribute('aria-hidden','true');
+  mark.style.width=(r.count/max*100)+'%';mark.style.background=color[i%color.length];rail.append(mark);
+  item.append(make('span',r.label,'label'),rail,make('strong',val(r.count)));
+  item.addEventListener('click',()=>{$('category').value=r.label;read();});wrap.append(item);
+ });dest.replaceChildren(wrap);$('showAll').textContent=showAll?'ย่อรายการ':'แสดงทั้งหมด';
+}
+function renderTable(id,rows){
+ const dest=$(id);if(!rows.length)return chartBlank(dest);
+ const table=make('table'), head=make('thead'), header=make('tr'), label=make('th','กลุ่มข้อมูล'), count=make('th','รายการ');
+ label.scope='col';count.scope='col';header.append(label,count);head.append(header);table.append(head);
+ const body=make('tbody');rows.forEach(r=>{const tr=make('tr');tr.append(make('td',r.label),make('td',val(r.count)));body.append(tr);});table.append(body);dest.replaceChildren(table);
+}
+function paint(next){
+ state=next;const s=state.summary, she=state.she;
+ for(const k of ['site','category','operationYear','fiscalYear'])addOptions(k,state.options[k]);
+ $('entries').textContent=val(s.entries)+' รายการ';$('entities').textContent=val(s.contracts)+' สัญญา | '+val(s.companies)+' บริษัท';
+ $('value').textContent=money(s.contractValue);$('contractsValue').textContent=val(s.contractsWithValue)+' สัญญามีระบุมูลค่า';
+ $('paid').textContent=money(s.cumulativePaid);$('paidRate').textContent=Number.isFinite(s.paymentPercent)?'คิดเป็น '+s.paymentPercent.toFixed(1)+'% ของมูลค่าสัญญารวม':'ยังคำนวณสัดส่วนไม่ได้';
+ $('categoryCount').textContent=val(s.categories)+' หมวด';$('filterCount').textContent=val(s.entries)+' รายการ';
+ if(she){
+  $('training').textContent=val(she.trained)+' รายการ';$('trainingMeta').textContent=val(she.trainingApplicable)+' รายการที่เกี่ยวข้อง · ไม่เกี่ยวข้อง '+val(she.trainingNotApplicable)+' · ไม่ระบุ '+val(she.trainingUnspecified);
+  $('health').textContent=val(she.ready)+' รายการพร้อมปฏิบัติงาน';$('healthMeta').textContent='ปฏิบัติงานจริง '+val(she.attendance)+' คน-ครั้ง · ไม่ระบุจำนวน '+val(she.attendanceMissing)+' รายการ';
+  $('screen').textContent=val(she.screeningPassed)+' รายการ';$('screenMeta').textContent='ผ่านอย่างน้อยหนึ่งการคัดกรอง จาก '+val(she.screeningApplicable)+' รายการที่เกี่ยวข้อง';
+  $('permit').textContent=val(she.permitRecorded)+' รายการมีประเภทใบอนุญาต';$('permitMeta').textContent='อนุมัติสารเคมีและมี SDS '+val(she.sdsApproved)+' รายการ';
+  $('sheInfo').hidden=true;
+ }else{
+  for(const id of ['training','trainingMeta','health','healthMeta','screen','screenMeta','permit','permitMeta'])$(id).textContent='—';
+  $('sheInfo').hidden=false;$('sheInfo').textContent='ไม่แสดงตัวเลข SHE เมื่อรายการตามตัวกรองต่ำกว่า '+val(state.sheMinimum)+' รายการ';
  }
- function track(n,max){
-  const bar=element('div',null,'track'), fill=element('span',null,'fill');
-  fill.style.width=(Math.min(Math.max(0,n/max),1)*100)+'%';bar.append(fill);return bar;
- }
- function draw(id,rows,label){
-  const data=rows.filter(row=>Array.isArray(row)&&typeof row[0]==='string'&&Number.isFinite(row[1])&&row[1]>0), box=$(id);
-  box.replaceChildren();
-  if(!data.length){note(id,'ไม่มีรายการตามช่วงและสถานะที่เลือก');return;}
-  const max=Math.max(1,...data.map(row=>row[1]));
-  for(const [key,n] of data){
-   const line=element('div',null,'bar'), row=element('div',null,'bar-top');
-   row.append(element('span',label(key)),element('strong',count(n)));line.append(row,track(n,max));box.append(line);
-  }
- }
- function options(snapshot,labels){
-  const {first,second}=snapshot.filters;
-  for(const [id,mine,other] of [['first',first,second],['second',second,first]]){
-   const select=$(id);
-   const all=Array.from(labels,([key,name])=>{const option=new Option(name,key);option.disabled=key===other;return option;});
-   select.replaceChildren(new Option('เลือกกลุ่มงาน',''),...all);
-   select.value=labels.has(mine)?mine:'';
-  }
- }
- function compare(snapshot,labels){
-  $('compareHint').textContent='ช่วงเวลาเดียวกัน • '+statusNames[snapshot.filters.status];
-  if(snapshot.comparison.length!==2){note('comparison','เลือกให้ครบ 2 กลุ่มงาน');return;}
-  const max=Math.max(1,...snapshot.comparison.map(item=>item.selected)), pair=element('div',null,'pair');
-  for(const item of snapshot.comparison){
-   const side=element('article',null,'side');
-   side.append(element('h3',labels.get(item.group)||'กลุ่มงาน'),element('strong',count(item.selected)),element('small',statusNames[snapshot.filters.status]+' · รายการ'),track(item.selected,max),element('small','ทุกสถานะ '+count(item.total)+' รายการ'),element('small','สัดส่วนแล้วเสร็จจากทุกสถานะ '+pct(item.completionRate)));
-   pair.append(side);
-  }
-  const d=Math.abs(snapshot.comparison[0].selected-snapshot.comparison[1].selected);
-  $('comparison').replaceChildren(pair,element('p',d?'จำนวนต่างกัน '+count(d)+' รายการ':'จำนวนเท่ากัน','difference'));
- }
- function show(snapshot,time){
-  const labels=new Map(snapshot.options.filter(p=>Array.isArray(p)&&groupPattern.test(p[0])&&typeof p[1]==='string'));
-  for(const key of keys)$(key+'Count').textContent=count(snapshot.totals[key]);
-  status=snapshot.filters.status;mark(status);options(snapshot,labels);
-  $('groupScope').textContent=statusNames[status];
-  draw('groupChart',snapshot.groups,key=>labels.get(key)||'ไม่ระบุหมวด');
-  compare(snapshot,labels);
-  const d=new Date(time), readAt=Number.isFinite(d.getTime())?d.toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}):'—';
-  $('source').textContent=base+' • ไม่ระบุวันที่ '+count(snapshot.undated)+' รายการ (ไม่รวมเมื่อกรองวัน) • อ่านข้อมูล '+readAt;
-  $('notice').textContent=snapshot.totals[status]?'แสดงข้อมูลตามตัวกรองแล้ว':'ไม่พบรายการตามช่วงและสถานะที่เลือก';
- }
- async function run(mode='iframe'){
-  const filters=selected();
-  if((filters.from&&filters.to&&filters.from>filters.to)||(filters.first&&filters.first===filters.second)){$('notice').textContent=errors.filter;return;}
-  const serial=++seq;$('connect').disabled=true;
-  $('notice').textContent=mode==='popup'?'ลงชื่อเข้าใช้ในหน้าต่าง Google ที่เปิดขึ้น…':'กำลังตรวจสิทธิ์และอัปเดตข้อมูล…';
-  try{
-   const reply=await ContractorConnection.read(filters,mode);
-   if(serial!==seq)return;
-   if(!reply?.ok)throw Error(reply?.reason||'connection');
-   const s=reply.snapshot;
-   if(!s||s.schemaVersion!==3||!keys.includes(s.filters?.status)||!s.totals||
-      ['options','groups','comparison'].some(key=>!Array.isArray(s[key])))throw Error('source');
-   show(s,reply.readAt);authorized=true;
-  }catch(e){
-   if(serial!==seq)return;
-   if(e.message!=='filter'){authorized=false;status='all';clear();ContractorConnection.disconnect();}
-   $('notice').textContent=errors[e.message]||errors.connection;
-  }finally{
-   if(serial===seq){disable(!authorized);$('connect').hidden=authorized||!window.CONTRACT_DASHBOARD?.webAppUrl;$('connect').disabled=false;}
-  }
- }
- for(const card of cards)card.addEventListener('click',()=>{status=card.dataset.status;void run();});
- for(const field of ['first','second'])$(field).addEventListener('change',()=>void run());
- $('connect').addEventListener('click',()=>void run('popup'));$('apply').addEventListener('click',()=>void run());
- $('reset').addEventListener('click',()=>{$('from').value=$('to').value=$('first').value=$('second').value='';status='all';void run();});
- $('clearCompare').addEventListener('click',()=>{$('first').value=$('second').value='';void run();});
- disable(true);void run();
+ renderDonut();renderMonths();renderBars();renderTable('categoryBreakdown',state.categories);renderTable('siteBreakdown',state.sites);
+}
+function fail(reason){state=null;clearVisual();enable(false);$('notice').textContent=messages[reason]||messages.source;}
+function read(){
+ const n=++generation;const filters=Object.fromEntries(keys.map(id=>[id,$(id).value]));
+ if(filters.from&&filters.to&&filters.from>filters.to){$('notice').textContent=messages.filter;return;}
+ if(!window.ProcurementConnection){fail('standalone');return;}
+ $('notice').textContent='กำลังอ่านข้อมูลตามตัวกรอง…';
+ window.ProcurementConnection.read(filters).then(reply=>{
+  if(n!==generation)return;
+  if(!reply?.ok||reply.overview?.schema!==1){fail(reply?.reason);return;}
+  const data=reply.overview;
+  if(!data.summary||!data.options||!Array.isArray(data.months)||data.months.length!==12||
+    !Array.isArray(data.sites)||!Array.isArray(data.categories)){fail('source');return;}
+  paint(data);enable(true);
+  $('notice').textContent='แสดงข้อมูลภาพรวม'+(reply.readAt?' · อ่านข้อมูล '+new Date(reply.readAt).toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}):'');
+ }).catch(e=>{if(n===generation)fail(e?.message||'connection');});
+}
+$('filters').addEventListener('submit',e=>{e.preventDefault();read();});
+for(const k of ['site','category','fiscalYear','operationYear'])$(k).addEventListener('change',read);
+$('reset').addEventListener('click',()=>{keys.forEach(id=>{$(id).value='';});showAll=false;read();});
+$('siteDisplay').addEventListener('change',()=>{if(state)renderDonut();});
+$('showAll').addEventListener('click',()=>{if(state){showAll=!showAll;renderBars();}});
+clearVisual();enable(false);read();
 })();
