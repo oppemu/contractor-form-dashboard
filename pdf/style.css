@@ -1,0 +1,136 @@
+body {
+    font-family: 'Anuphan', sans-serif; /* ใช้ฟอนต์ Anuphan */
+    background-color: #f3f5f8;
+    color: #000000; /* สีตัวอักษรเป็นสีดำ */
+}
+
+.main-container {
+    max-width: 1100px; /* ปรับให้กว้างขึ้น เพื่อรองรับเรื่องยาวๆ */
+}
+
+/* ธีมมหิดล (สีน้ำเงิน #00246B, สีทอง #F2A900) */
+.logo-area {
+    color: #00246B;
+}
+.logo-text {
+    font-size: 24px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+.logo-subtext {
+    font-size: 12px;
+    color: #666;
+    display: block;
+    margin-top: -5px;
+}
+.form-title {
+    color: #00246B;
+    font-weight: 500;
+    margin-top: 20px;
+    font-size: 1.3rem;
+}
+
+/* แถบอีเมลผู้ใช้งาน */
+.user-bar {
+    background-color: #e9ecef;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #000000;
+}
+
+/* กล่องเนื้อหาหลัก */
+.content-box {
+    background: #ffffff;
+    padding: 30px 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+/* หัวข้อภายในกล่อง */
+.box-title {
+    color: #00246B;
+    font-weight: 600;
+    border-left: 4px solid #F2A900; /* แถบสีทองหน้าหัวข้อ */
+    padding-left: 12px;
+    margin-bottom: 25px;
+    font-size: 1.15rem;
+}
+
+/* สไตล์สำหรับการ์ดเอกสารแนวยาว */
+.doc-card {
+    background: #fff;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 18px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+.doc-card:hover {
+    border-color: #00246B;
+    box-shadow: 0 4px 15px rgba(0, 36, 107, 0.08);
+}
+.doc-info {
+    display: flex;
+    flex-direction: column;
+}
+.doc-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #000000;
+}
+.doc-meta {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* ปุ่มธีมมหิดล */
+.btn-mahidol {
+    background-color: #00246B;
+    color: #ffffff;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 14px;
+    border: none;
+    transition: background-color 0.2s;
+}
+.btn-mahidol:hover {
+    background-color: #001540;
+    color: #ffffff;
+}
+
+.loader {
+    font-size: 0.85em;
+    color: #F2A900;
+    font-weight: 500;
+}
+/* ---- เพิ่ม CSS สำหรับจัด Layout ส่วนค้นหาและ Logo ---- */
+.header-card {
+    background: #ffffff;
+    padding: 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    margin-bottom: 30px;
+}
+.header-logo {
+    max-width: 450px;
+    height: auto;
+}
+.search-group {
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.search-group input {
+    border-right: none;
+}
+.search-group input:focus {
+    box-shadow: none;
+    border-color: #00246B;
+}
