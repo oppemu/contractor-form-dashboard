@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบดาวน์โหลด PDF จ้างเหมา</title>
+    <!-- ใช้ Bootstrap และ Font เหมือนเดิม -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600&family=TH+Sarabun+New&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .go-back { display: inline-flex; align-items: center; min-height: 40px; margin-bottom: 12px; color: #00246B; font-weight: 600; text-decoration: none; }
+        .go-back:hover, .go-back:focus-visible { text-decoration: underline; }
+        .header-logo { width: min(100%, 450px); }
+        .btn-mahidol:disabled { background: #00246B; color: #fff; border: none; }
+        @media (max-width: 575px) { .header-card, .content-box { padding: 24px 16px; } }
+    </style>
+
+</head>
+<body>
+    <main class="container main-container mt-5 mb-5">
+        <a class="go-back" href="../">← กลับแดชบอร์ด</a>
+
+        <!-- ส่วนหัว (Logo + ช่องค้นหา) ย้ายมาใส่ในกรอบ (Card) เดียวกัน -->
+        <div class="header-card">
+            <div class="text-center mb-4">
+                <!-- เปลี่ยนใช้ LOGO_2.png -->
+                <img src="LOGO.png" alt="โลโก้กองกายภาพและสิ่งแวดล้อม" class="header-logo">
+            </div>
+
+            <div class="search-container text-center">
+                <label for="searchName" class="form-label d-block text-muted"></label>
+                <div class="input-group search-group mx-auto">
+                    <!-- เพิ่มปุ่มค้นหาและ id สำหรับให้ JavaScript เรียกใช้ -->
+                    <input type="text" id="searchName" class="form-control form-control-lg" placeholder="พิมพ์ชื่อเพื่อค้นหาเอกสารของคุณ" aria-label="ค้นหาชื่อ" aria-describedby="pdf-availability" autocomplete="off" disabled>
+                    <button class="btn btn-mahidol px-4" type="button" id="btnSearch" disabled>ค้นหา</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- รายการเอกสาร -->
+        <div class="content-box">
+            <h1 class="box-title visually-hidden">เอกสาร PDF จ้างเหมา</h1>
+
+            <div id="pdf-availability" class="text-center py-4 text-muted" role="status">
+                ยังไม่เปิดให้ค้นหาหรือดาวน์โหลดเอกสารจากหน้านี้
+            </div>
+
+            <div id="docList" style="display:none; flex-direction: column; gap: 15px;"></div>
+        </div>
+    </main>
+</body>
+</html>
