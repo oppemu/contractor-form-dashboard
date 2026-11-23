@@ -1,2 +1,1 @@
-// ใส่เฉพาะลิงก์ Apps Script Web App ที่ลงท้าย /exec ของแดชบอร์ด ไม่ต้องใส่โทเคนหรือข้อมูลชีต
-window.CONTRACT_DASHBOARD = Object.freeze({webAppUrl: ''});
+window.CONTRACT_DASHBOARD = Object.freeze({webAppUrl: "https://script.google.com/a/macros/mahidol.ac.th/s/AKfycbytN073GjkcB15_u9PwjM_ucsin7ZcsTlth4Ukv2F3cmEFQV8xT1M7NS4kIVfA7b75M/exec"});
