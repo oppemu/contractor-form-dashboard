@@ -73,6 +73,46 @@ function paint(next){
  }
  renderDonut();renderMonths();renderBars();renderTable('categoryBreakdown',state.categories);renderTable('siteBreakdown',state.sites);
 }
+function paintMahidolSummary(data){
+ const exact=(obj,keys)=>obj&&Object.getPrototypeOf(obj)===Object.prototype&&
+  Object.keys(obj).length===keys.length&&keys.every(k=>Object.prototype.hasOwnProperty.call(obj,k));
+ if(!exact(data,['schema','periods'])||data.schema!==1||!Array.isArray(data.periods)||data.periods.length!==4)return false;
+ let prev=null;
+ for(const p of data.periods){
+  if(!exact(p,['year','quarter','low'])||!Number.isInteger(p.year)||p.year<2500||p.year>2800||
+     !Number.isInteger(p.quarter)||p.quarter<1||p.quarter>4||
+     !(p.low===null||(Number.isSafeInteger(p.low)&&p.low>=10&&p.low<=100000&&p.low%10===0)))return false;
+  const sequential=p.year*4+p.quarter;
+  if(prev!==null&&sequential!==prev+1)return false;
+  prev=sequential;
+ }
+ const main=$('notice')?.closest('main');
+ if(!main)return false;
+ // The backend restricts data; this only changes what the visual summary displays.
+ state=null;enable(false);
+ for(const el of main.querySelectorAll(':scope > section, :scope > .finance-note, :scope > details')){el.hidden=true;el.style.display='none';}
+ for(const link of document.querySelectorAll('a[href="https://oppemu.github.io/PDF-OPPE-01-F-08-01/"]')){
+  link.hidden=true;link.style.display='none';
+ }
+ const pane=make('section','','panel');pane.id='mahidol-overview';
+ pane.append(make('h2','จำนวนรายการเข้าปฏิบัติงานตามไตรมาส'),
+   make('p','แสดงเป็นช่วงจำนวนรายการ ไม่ใช่ยอดจริงแบบเจาะรายละเอียด และไม่แสดงจำนวนเมื่อมีน้อยกว่า 10 รายการ','subtle'));
+ const max=Math.max(10,...data.periods.map(p=>p.low||0));
+ const chart=make('div','','bar-list');
+ chart.setAttribute('role','list');chart.setAttribute('aria-label','ช่วงจำนวนรายการใน 4 ไตรมาสที่ปิดแล้ว');
+ for(const p of data.periods){
+  const label='ไตรมาส '+val(p.quarter)+' / '+val(p.year);
+  const amount=p.low===null?'ไม่แสดงจำนวน':val(p.low)+'–'+val(p.low+9)+' รายการ';
+  const item=make('div','','bar-item');item.setAttribute('role','listitem');item.style.cursor='default';
+  const rail=make('span','','touch-bar'), mark=make('i');rail.setAttribute('aria-hidden','true');
+  mark.style.width=((p.low||0)/max*100)+'%';mark.style.background='#2563eb';rail.append(mark);
+  item.append(make('span',label,'label'),rail,make('strong',amount));chart.append(item);
+ }
+ pane.append(chart,make('p','ที่มา: แบบฟอร์ม OPPE-01-F-08-01 เฉพาะรายการที่มีวันที่เข้าดำเนินการใน 4 ไตรมาสปฏิทินที่ปิดแล้ว ตามเวลาไทย','subtle'));
+ const old=$('mahidol-overview');if(old)old.remove();
+ main.append(pane);$('notice').textContent='ภาพรวมสำหรับบัญชีมหาวิทยาลัยมหิดล';
+ return true;
+}
 function fail(reason){state=null;clearVisual();enable(false);$('notice').textContent=messages[reason]||messages.source;}
 function read(){
  const n=++generation;const filters=Object.fromEntries(keys.map(id=>[id,$(id).value]));
@@ -81,7 +121,12 @@ function read(){
  $('notice').textContent='กำลังอ่านข้อมูลตามตัวกรอง…';
  window.ProcurementConnection.read(filters).then(reply=>{
   if(n!==generation)return;
-  if(!reply?.ok||reply.overview?.schema!==1){fail(reply?.reason);return;}
+  if(!reply?.ok){fail(reply?.reason);return;}
+  if(reply.availability==='mahidol-overview'){
+   if(!paintMahidolSummary(reply.publicOverview))fail('source');
+   return;
+  }
+  if(reply.overview?.schema!==1){fail(reply?.reason);return;}
   const data=reply.overview;
   if(!data.summary||!data.options||!Array.isArray(data.months)||data.months.length!==12||
     !Array.isArray(data.sites)||!Array.isArray(data.categories)){fail('source');return;}
